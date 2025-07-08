@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
 
-/**
- * @Route("/api/game", name="api_game_")
- */
+#[Route('/api/game', name: 'api_game_')]
 class GameController extends AbstractController
 {
     public function __construct(
@@ -20,8 +18,8 @@ class GameController extends AbstractController
     ) {
     }
 
+    #[Route('/puzzle', name: 'create_puzzle', methods: ['POST'])]
     /**
-     * @Route("/puzzle", name="create_puzzle", methods={"POST"})
      * @OA\Post(
      *     path="/api/game/puzzle",
      *     summary="Create a new puzzle",
@@ -63,8 +61,8 @@ class GameController extends AbstractController
         }
     }
 
+    #[Route('/submit', name: 'submit_word', methods: ['POST'])]
     /**
-     * @Route("/submit", name="submit_word", methods={"POST"})
      * @OA\Post(
      *     path="/api/game/submit",
      *     summary="Submit a word attempt",
@@ -103,7 +101,7 @@ class GameController extends AbstractController
         $word = $data['word'] ?? null;
 
         if (!$sessionId || !$word) {
-            return $this->json(['error' => 'Session ID and word are required'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Student ID and word are required'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -118,8 +116,8 @@ class GameController extends AbstractController
         }
     }
 
+    #[Route('/state/{sessionId}', name: 'get_state', methods: ['GET'])]
     /**
-     * @Route("/state/{sessionId}", name="get_state", methods={"GET"})
      * @OA\Get(
      *     path="/api/game/state/{sessionId}",
      *     summary="Get current puzzle state",
@@ -168,8 +166,8 @@ class GameController extends AbstractController
         }
     }
 
+    #[Route('/leaderboard', name: 'get_leaderboard', methods: ['GET'])]
     /**
-     * @Route("/leaderboard", name="get_leaderboard", methods={"GET"})
      * @OA\Get(
      *     path="/api/game/leaderboard",
      *     summary="Get top 10 leaderboard",
@@ -192,6 +190,53 @@ class GameController extends AbstractController
         try {
             $leaderboard = $this->gameService->getLeaderboard();
             return $this->json($leaderboard, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/end', name: 'end_game', methods: ['POST'])]
+    /**
+     * @OA\Post(
+     *     path="/api/game/end",
+     *     summary="End the game",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="sessionId", type="string", example="student123"),
+     *             @OA\Property(property="remainingLetters", type="string", example="OINSHRDLUCM")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Game ended successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="remainingWords", type="array", example="['HEAT', 'HEAT', 'HEAT']"),
+     *             @OA\Property(property="totalScore", type="integer", example=15)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Session ID is required")
+     *         )
+     *     )
+     * )
+     */
+    public function endGame(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $sessionId = $data['sessionId'] ?? null;
+
+        if (!$sessionId) {
+            return $this->json(['error' => 'Session ID is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $this->gameService->endGame($sessionId);
+            dump($result);die;
+            return $this->json($result, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

@@ -1,0 +1,51 @@
+2025-07-08 20:22:06.086 IST [27688] LOG:  starting PostgreSQL 15.13, compiled by Visual C++ build 1944, 64-bit
+2025-07-08 20:22:06.089 IST [27688] LOG:  listening on IPv6 address "::1", port 5432
+2025-07-08 20:22:06.089 IST [27688] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2025-07-08 20:22:06.131 IST [4760] LOG:  database system was shut down at 2025-07-08 20:20:14 IST
+2025-07-08 20:22:06.144 IST [27688] LOG:  database system is ready to accept connections
+2025-07-08 20:22:18.143 IST [17292] FATAL:  password authentication failed for user "symfony_user"
+2025-07-08 20:22:18.143 IST [17292] DETAIL:  Role "symfony_user" does not exist.
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:22:18.172 IST [13036] FATAL:  password authentication failed for user "symfony_user"
+2025-07-08 20:22:18.172 IST [13036] DETAIL:  Role "symfony_user" does not exist.
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:23:31.053 IST [23636] ERROR:  canceling statement due to user request
+2025-07-08 20:23:31.053 IST [27688] LOG:  received fast shutdown request
+2025-07-08 20:23:31.056 IST [27688] LOG:  aborting any active transactions
+2025-07-08 20:23:31.057 IST [27688] LOG:  background worker "logical replication launcher" (PID 23636) exited with exit code 1
+2025-07-08 20:23:31.060 IST [21712] LOG:  shutting down
+2025-07-08 20:23:31.062 IST [21712] LOG:  checkpoint starting: shutdown immediate
+2025-07-08 20:23:31.089 IST [21712] LOG:  checkpoint complete: wrote 41 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.015 s, total=0.029 s; sync files=11, longest=0.003 s, average=0.002 s; distance=229 kB, estimate=229 kB
+2025-07-08 20:23:31.097 IST [27688] LOG:  database system is shut down
+2025-07-08 20:24:46.214 IST [1248] LOG:  starting PostgreSQL 15.13, compiled by Visual C++ build 1944, 64-bit
+2025-07-08 20:24:46.217 IST [1248] LOG:  listening on IPv6 address "::1", port 5432
+2025-07-08 20:24:46.217 IST [1248] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2025-07-08 20:24:46.260 IST [6720] LOG:  database system was shut down at 2025-07-08 20:23:31 IST
+2025-07-08 20:24:46.275 IST [1248] LOG:  database system is ready to accept connections
+2025-07-08 20:25:02.739 IST [20716] FATAL:  password authentication failed for user "postgres"
+2025-07-08 20:25:02.739 IST [20716] DETAIL:  Password does not match for user "postgres".
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:25:24.494 IST [2284] FATAL:  password authentication failed for user "postgres"
+2025-07-08 20:25:24.494 IST [2284] DETAIL:  Password does not match for user "postgres".
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:26:23.870 IST [18244] ERROR:  database "word_puzzle_db" does not exist
+2025-07-08 20:26:23.870 IST [18244] STATEMENT:  GRANT ALL PRIVILEGES ON DATABASE word_puzzle_db TO symfony_user;
+2025-07-08 20:27:05.110 IST [18244] ERROR:  syntax error at or near "GRANT" at character 17
+2025-07-08 20:27:05.110 IST [18244] STATEMENT:  CREATE DATABASE
+	GRANT ALL PRIVILEGES ON DATABASE word_puzzle_db TO symfony_user;
+2025-07-08 20:27:38.691 IST [18244] ERROR:  syntax error at or near "GRANT" at character 17
+2025-07-08 20:27:38.691 IST [18244] STATEMENT:  CREATE DATABASE
+	GRANT ALL PRIVILEGES ON DATABASE word_puzzle_db TO symfony_user;
+2025-07-08 20:29:46.267 IST [4556] LOG:  checkpoint starting: time
+2025-07-08 20:30:38.540 IST [23668] FATAL:  password authentication failed for user "symfony_user"
+2025-07-08 20:30:38.540 IST [23668] DETAIL:  Password does not match for user "symfony_user".
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:30:38.580 IST [22224] FATAL:  password authentication failed for user "symfony_user"
+2025-07-08 20:30:38.580 IST [22224] DETAIL:  Password does not match for user "symfony_user".
+	Connection matched pg_hba.conf line 87: "host    all             all             127.0.0.1/32            password"
+2025-07-08 20:31:30.936 IST [4556] LOG:  checkpoint complete: wrote 963 buffers (5.9%); 0 WAL file(s) added, 0 removed, 0 recycled; write=104.426 s, sync=0.233 s, total=104.670 s; sync files=313, longest=0.002 s, average=0.001 s; distance=4357 kB, estimate=4357 kB
+2025-07-08 20:37:44.715 IST [1248] LOG:  server process (PID 5716) was terminated by exception 0xC000013A
+2025-07-08 20:37:44.715 IST [1248] DETAIL:  Failed process was running: GRANT ALL PRIVILEGES ON DATABASE word_puzzle_db TO symfony_user;
+2025-07-08 20:37:44.715 IST [1248] HINT:  See C include file "ntstatus.h" for a description of the hexadecimal value.
+2025-07-08 20:37:44.715 IST [1248] LOG:  terminating any other active server processes
+^C

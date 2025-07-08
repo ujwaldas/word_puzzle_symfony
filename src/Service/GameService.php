@@ -137,7 +137,8 @@ class GameService
             'totalScore' => $puzzle->getTotalScore(),
             'remainingLetters' => $puzzle->getRemainingLetters(),
             'isComplete' => $isComplete,
-            'submissionId' => $submission->getId()
+            'submissionId' => $submission->getId(),
+            'puzzleString' => $puzzle->getPuzzleString()
         ];
     }
 
@@ -272,4 +273,19 @@ class GameService
             $this->entityManager->flush();
         }
     }
+
+    public function endGame(string $sessionId): array
+    {
+        $student = $this->studentRepository->findOneBy(['sessionId' => $sessionId]);
+        $puzzle = $student->getPuzzle();
+        $remainingWords = $this->dictionaryService->calculateRemainingWords($puzzle->getRemainingLetters());
+        $totalScore = $puzzle->getTotalScore();
+        $puzzle->setIsActive(false);
+        $this->entityManager->flush();
+        return [
+            'remainingWords' => $remainingWords,
+            'totalScore' => $totalScore
+        ];
+    }
+
 } 

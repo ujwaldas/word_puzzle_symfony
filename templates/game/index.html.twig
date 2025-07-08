@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Puzzle Game</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .session-input {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .session-input input {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 200px;
+            margin-right: 10px;
+        }
+
+        .session-input button {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .session-input button:hover {
+            background: #5a6fd8;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .puzzle-display {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .letters {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+            letter-spacing: 5px;
+        }
+
+        .remaining-letters {
+            font-size: 1.5em;
+            color: #666;
+            margin: 15px 0;
+            letter-spacing: 3px;
+        }
+
+        .score {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .word-input {
+            margin: 20px 0;
+        }
+
+        .word-input input {
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            width: 200px;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .word-input button {
+            padding: 15px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .word-input button:hover {
+            background: #218838;
+        }
+
+        .submissions {
+            margin-top: 30px;
+        }
+
+        .submission-item {
+            background: #e9ecef;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .submission-word {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .submission-score {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .leaderboard {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .leaderboard h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .leaderboard-item {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .end-game-btn {
+            background:rgb(212, 122, 131) !important;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Word Puzzle Game</h1>
+        
+        <div class="session-input">
+            <input type="text" id="sessionId" placeholder="Enter your username" value="student123">
+            <button id="startGameBtn">Start Game</button>
+        </div>
+
+        <div class="game-section" id="gameSection">
+            <div class="puzzle-display">
+                <h3>Current Puzzle</h3>
+                <div class="letters" id="puzzleLetters">Loading...</div>
+                <div class="remaining-letters" id="remainingLetters"></div>
+                <div class="score" id="totalScore">Score: 0</div>
+            </div>
+
+            <div class="word-input">
+                <input type="text" id="wordInput" placeholder="Enter a word" maxlength="15">
+                <button id="submitWordBtn">Submit Word</button>
+                <button class="end-game-btn" id="endGameBtn">End Game</button>
+            </div>
+            <div id="message"></div>
+
+            <div class="submissions">
+                <h3>Your Words</h3>
+                <div id="submissionsList"></div>
+            </div>
+
+            <div class="leaderboard">
+                <h3>🏆 Leaderboard</h3>
+                <div id="leaderboardList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let currentSessionId = '';
+            let gameState = null;
+
+            // Start Game Button Click
+            $('#startGameBtn').on('click', function() {
+                startGame();
+            });
+
+            // Submit Word Button Click
+            $('#submitWordBtn').on('click', function() {
+                submitWord();
+            });
+
+            // End Game Button Click
+            $('#endGameBtn').on('click', function() {
+                endGame();
+            });
+
+            // Enter key handlers
+            $('#sessionId').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    startGame();
+                }
+            });
+
+            $('#wordInput').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    submitWord();
+                }
+            });
+
+            function startGame() {
+                const sessionId = $('#sessionId').val().trim();
+                if (!sessionId) {
+                    showMessage('Please enter a session ID', 'error');
+                    return;
+                }
+
+                currentSessionId = sessionId;
+                showMessage('Creating puzzle...', 'loading');
+
+                $.ajax({
+                    url: '/api/game/puzzle',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ sessionId: sessionId }),
+                    success: function(data) {
+                        gameState = data;
+                        updateGameDisplay();
+                        $('#gameSection').show();
+                        showMessage('Game started!', 'success');
+                        loadLeaderboard();
+                    },
+                    error: function(xhr) {
+                        const errorData = xhr.responseJSON || {};
+                        showMessage(errorData.error || 'Failed to start game', 'error');
+                    }
+                });
+            }
+
+            function submitWord() {
+                const word = $('#wordInput').val().trim().toUpperCase();
+                if (!word) {
+                    showMessage('Please enter a word', 'error');
+                    return;
+                }
+
+                if (!currentSessionId) {
+                    showMessage('Please start a game first', 'error');
+                    return;
+                }
+
+                showMessage('Submitting word...', 'loading');
+
+                $.ajax({
+                    url: '/api/game/submit',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 
+                        sessionId: currentSessionId, 
+                        word: word 
+                    }),
+                    success: function(data) {
+                        gameState = data;
+                        updateGameDisplay();
+                        $('#wordInput').val('');
+                        showMessage(`Word submitted! Score: ${data.score}`, 'success');
+                        loadSubmissions();
+                    },
+                    error: function(xhr) {
+                        const errorData = xhr.responseJSON || {};
+                        showMessage(errorData.error || 'Failed to submit word', 'error');
+                    }
+                });
+            }
+            // This function is used to end the game
+            // It is used to end the game and return the remaining words and score
+            function endGame() {
+                showMessage('Ending game...', 'loading');
+                let remainingLetters = $('#remainingLetters').text();
+                let sessionId = $('#sessionId').val();
+                
+                $.ajax({
+                    url: '/api/game/end',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ sessionId: currentSessionId, remainingLetters: remainingLetters }),
+                    success: function(data) {
+                        let totalScore = $('#totalScore').text();
+                        showMessage(`Game ended! Your score is ${totalScore} and the remaining words are ${data.remainingWords}`, 'success');
+                        $('#gameSection').hide();
+                        $('#message').text('');
+                    }
+                });
+            }
+
+            function updateGameDisplay() {
+                console.log(gameState);
+                if (gameState) {
+                    $('#puzzleLetters').text(gameState.puzzleString || 'No puzzle');
+                    $('#remainingLetters').text(gameState.remainingLetters || '');
+                    $('#totalScore').text(`Score: ${gameState.totalScore || 0}`);
+                }
+            }
+
+            function loadSubmissions() {
+                $.ajax({
+                    url: `/api/game/state/${currentSessionId}`,
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.submissions) {
+                            const submissionsList = $('#submissionsList');
+                            submissionsList.empty();
+                            
+                            data.submissions.forEach(function(submission) {
+                                const item = $('<div>')
+                                    .addClass('submission-item')
+                                    .html(`
+                                        <span class="submission-word">${submission.word}</span>
+                                        <span class="submission-score">+${submission.score}</span>
+                                    `);
+                                submissionsList.append(item);
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading submissions:', xhr);
+                    }
+                });
+            }
+
+            function loadLeaderboard() {
+                $.ajax({
+                    url: '/api/game/leaderboard',
+                    method: 'GET',
+                    success: function(data) {
+                        const leaderboardList = $('#leaderboardList');
+                        leaderboardList.empty();
+                        
+                        data.forEach(function(entry, index) {
+                            const item = $('<div>')
+                                .addClass('leaderboard-item')
+                                .html(`
+                                    <span>${index + 1}. ${entry.word}</span>
+                                    <span class="submission-score">${entry.score}</span>
+                                `);
+                            leaderboardList.append(item);
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading leaderboard:', xhr);
+                    }
+                });
+            }
+
+            function showMessage(message, type) {
+                $('#message')
+                    .text(message)
+                    .removeClass()
+                    .addClass(type);
+            }
+        });
+    </script>
+</body>
+</html> 
