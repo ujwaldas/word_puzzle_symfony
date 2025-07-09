@@ -38,7 +38,6 @@ A robust backend service for a word puzzle game where students create English wo
 - **PHP Version**: 8.1+
 - **Database**: PostgreSQL (development), MySQL/PostgreSQL (production)
 - **Testing**: PHPUnit
-- **API Documentation**: OpenAPI/Swagger annotations
 - **Frontend**: HTML, CSS, JavaScript (jQuery)
 
 ## 📁 Project Structure
