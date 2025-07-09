@@ -244,6 +244,102 @@
         </div>
     </div>
 
+    <!-- Popup Modal -->
+    <div id="gameEndModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎉 Game Complete!</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="gameEndMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModalBtn" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: white;
+        }
+
+        .modal-body {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+
     <script>
         $(document).ready(function() {
             let currentSessionId = '';
@@ -262,6 +358,18 @@
             // End Game Button Click
             $('#endGameBtn').on('click', function() {
                 endGame();
+            });
+
+            // Modal event handlers
+            $('.close, #closeModalBtn').on('click', function() {
+                closeGameEndModal();
+            });
+
+            // Close modal when clicking outside
+            $(window).on('click', function(event) {
+                if (event.target == document.getElementById('gameEndModal')) {
+                    closeGameEndModal();
+                }
             });
 
             // Enter key handlers
@@ -354,12 +462,34 @@
                     contentType: 'application/json',
                     data: JSON.stringify({ sessionId: currentSessionId, remainingLetters: remainingLetters }),
                     success: function(data) {
-                        let totalScore = $('#totalScore').text();
-                        showMessage(`Game ended! Your score is ${totalScore} and the remaining words are ${data.remainingWords}`, 'success');
-                        $('#gameSection').hide();
-                        $('#message').text('');
+                        showGameEndModal(data);
                     }
                 });
+            }
+
+            function showGameEndModal(data) {
+                const message = `🎉 Congratulations!<br><br>
+                               <strong>Your Final Score:</strong> ${data.totalScore}<br>
+                               <strong>Remaining Words:</strong> ${data.remainingWords}<br><br>
+                               <em>Click close to return to the main menu.</em>`;
+                
+                $('#gameEndMessage').html(message);
+                $('#gameEndModal').show();
+            }
+
+            function closeGameEndModal() {
+                $('#gameEndModal').hide();
+                $('#gameSection').hide();
+                $('#message').text('');
+                // Reset the game state
+                currentSessionId = '';
+                gameState = null;
+                $('#sessionId').val('');
+                $('#wordInput').val('');
+                $('#puzzleLetters').text('');
+                $('#remainingLetters').text('');
+                $('#totalScore').text('Score: 0');
+                $('#submissionsList').empty();
             }
 
             function updateGameDisplay() {

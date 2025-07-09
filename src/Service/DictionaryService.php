@@ -29,12 +29,6 @@ class DictionaryService
         return in_array($word, $dictionary, true);
     }
 
-    public function getWordDefinition(string $word): ?array
-    {
-        // Since we're using a simple word list, we can't provide definitions
-        // This method is kept for compatibility but returns null
-        return null;
-    }
 
     /**
      * Calculate all possible words that can be formed from the remaining letters
@@ -43,7 +37,7 @@ class DictionaryService
      * @param int $maxWords Maximum number of words to return (default: 50)
      * @return array Array of valid words that can be formed
      */
-    public function calculateRemainingWords(string $remainingLetters, int $maxWords = 5000000): array
+    public function calculateRemainingWords(string $remainingLetters, int $maxWords = 1000000): array
     {
         $remainingLetters = strtolower(trim($remainingLetters));
         
@@ -55,14 +49,9 @@ class DictionaryService
         $letterFrequency = $this->getLetterFrequency($remainingLetters);
         // Get optimized word candidates
         $candidates = $this->getWordCandidates($letterFrequency, $maxWords * 3);
+        
         // Filter and validate candidates
         $validWords = $this->filterValidWords($candidates, $letterFrequency);
-        
-        // Sort by length (longer words first) and then alphabetically
-        usort($validWords, function($a, $b) {
-            $lengthDiff = strlen($b) - strlen($a);
-            return $lengthDiff !== 0 ? $lengthDiff : strcmp($a, $b);
-        });
         
         return array_slice($validWords, 0, $maxWords);
     }
@@ -95,6 +84,11 @@ class DictionaryService
     private function getWordCandidates(array $letterFrequency, int $limit): array
     {
         $dictionary = $this->getDictionaryWords();
+        // Sort by word length (highest to lowest)
+        uasort($dictionary, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+        
         $candidates = [];
         $letterKeys = array_keys($letterFrequency);
         
@@ -199,89 +193,6 @@ class DictionaryService
         return true;
     }
 
-    /**
-     * Get all possible word combinations from remaining letters
-     * 
-     * @param string $remainingLetters
-     * @param int $maxCombinations
-     * @return array Array of word combinations
-     */
-    public function getWordCombinations(string $remainingLetters, int $maxCombinations = 20): array
-    {
-        $remainingLetters = strtolower(trim($remainingLetters));
-        
-        if (empty($remainingLetters) || !ctype_alpha($remainingLetters)) {
-            return [];
-        }
-
-        $letterFrequency = $this->getLetterFrequency($remainingLetters);
-        $combinations = [];
-        
-        // Get all possible words
-        $allWords = $this->calculateRemainingWords($remainingLetters, 100);
-        
-        // Generate combinations using backtracking
-        $this->generateCombinations($allWords, $letterFrequency, [], $combinations, $maxCombinations);
-        
-        // Sort combinations by total score (longer words = higher score)
-        usort($combinations, function($a, $b) {
-            $scoreA = array_sum(array_map('strlen', $a));
-            $scoreB = array_sum(array_map('strlen', $b));
-            return $scoreB - $scoreA;
-        });
-        
-        return array_slice($combinations, 0, $maxCombinations);
-    }
-
-    /**
-     * Generate word combinations using backtracking algorithm
-     * 
-     * @param array $words
-     * @param array $remainingLetters
-     * @param array $currentCombination
-     * @param array $combinations
-     * @param int $maxCombinations
-     */
-    private function generateCombinations(
-        array $words, 
-        array $remainingLetters, 
-        array $currentCombination, 
-        array &$combinations, 
-        int $maxCombinations
-    ): void {
-        if (count($combinations) >= $maxCombinations) {
-            return;
-        }
-        
-        // Add current combination if it's not empty
-        if (!empty($currentCombination)) {
-            $combinations[] = $currentCombination;
-        }
-        
-        foreach ($words as $word) {
-            if ($this->canFormWord($word, $remainingLetters)) {
-                // Create new remaining letters after using this word
-                $newRemainingLetters = $remainingLetters;
-                $wordFrequency = $this->getLetterFrequency($word);
-                
-                foreach ($wordFrequency as $letter => $count) {
-                    $newRemainingLetters[$letter] -= $count;
-                    if ($newRemainingLetters[$letter] <= 0) {
-                        unset($newRemainingLetters[$letter]);
-                    }
-                }
-                
-                // Recursively generate combinations
-                $this->generateCombinations(
-                    $words, 
-                    $newRemainingLetters, 
-                    array_merge($currentCombination, [$word]), 
-                    $combinations, 
-                    $maxCombinations
-                );
-            }
-        }
-    }
 
     /**
      * Get optimized dictionary words with letter frequency indexing
@@ -329,36 +240,4 @@ class DictionaryService
         return count($this->getDictionaryWords());
     }
 
-    /**
-     * Get statistics about remaining words
-     * 
-     * @param string $remainingLetters
-     * @return array Statistics about possible words
-     */
-    public function getRemainingWordsStats(string $remainingLetters): array
-    {
-        $words = $this->calculateRemainingWords($remainingLetters, 1000);
-        
-        if (empty($words)) {
-            return [
-                'total_words' => 0,
-                'longest_word' => '',
-                'shortest_word' => '',
-                'average_length' => 0,
-                'length_distribution' => []
-            ];
-        }
-        
-        $lengths = array_map('strlen', $words);
-        $lengthDistribution = array_count_values($lengths);
-        ksort($lengthDistribution);
-        
-        return [
-            'total_words' => count($words),
-            'longest_word' => $words[0], // Already sorted by length
-            'shortest_word' => end($words),
-            'average_length' => round(array_sum($lengths) / count($lengths), 2),
-            'length_distribution' => $lengthDistribution
-        ];
-    }
 } 

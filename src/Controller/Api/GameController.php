@@ -235,7 +235,6 @@ class GameController extends AbstractController
 
         try {
             $result = $this->gameService->endGame($sessionId);
-            dump($result);die;
             return $this->json($result, Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);

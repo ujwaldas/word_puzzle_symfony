@@ -212,22 +212,11 @@ class GameService
             return true;
         }
         
-        // Check if any valid words can still be formed
-        // This is a simplified check - in a real implementation, you might want to
-        // check against a list of common words that could be formed
-        $vowelCount = 0;
-        $consonantCount = 0;
+        // Use dictionary service to check if any valid words can still be formed
+        $remainingWords = $this->dictionaryService->calculateRemainingWords($remaining, 10);
         
-        for ($i = 0; $i < strlen($remaining); $i++) {
-            if (strpos(self::VOWELS, $remaining[$i]) !== false) {
-                $vowelCount++;
-            } else {
-                $consonantCount++;
-            }
-        }
-        
-        // If no vowels remaining, no valid words can be formed
-        return $vowelCount === 0;
+        // If no valid words can be formed, puzzle is complete
+        return empty($remainingWords);
     }
 
     private function updateLeaderboard(string $word, int $score): void
@@ -235,13 +224,7 @@ class GameService
         // Check if this word already exists in leaderboard
         $existingEntry = $this->leaderboardRepository->findOneBy(['word' => $word]);
         
-        if ($existingEntry) {
-            // Only update if new score is higher
-            if ($score > $existingEntry->getScore()) {
-                $existingEntry->setScore($score);
-                $this->entityManager->flush();
-            }
-        } else {
+        if (!$existingEntry) {
             // Check if we need to add to leaderboard
             $lowestScore = $this->leaderboardRepository->findOneBy([], ['score' => 'ASC']);
             

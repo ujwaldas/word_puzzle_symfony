@@ -146,10 +146,11 @@ class Puzzle
 
     public function getTotalScore(): int
     {
-        return $this->submissions->reduce(
-            fn(int $carry, Submission $submission) => $carry + $submission->getScore(),
-            0
-        );
+        $totalScore = 0;
+        foreach ($this->submissions as $submission) {
+            $totalScore += $submission->getScore();
+        }
+        return $totalScore;
     }
 
     public function canUseLetters(string $word): bool

@@ -1,69 +1,126 @@
-# WordPuzzleGame
+# 🎯 Word Puzzle Game - Symfony Backend
 
-A Symfony 6.4+ word puzzle game where students create words from a given set of letters. Built with PHP 8.1+, Doctrine ORM, and follows PSR-12 coding standards.
+A robust backend service for a word puzzle game where students create English words from a given set of letters. Built with Symfony 6+ and PHP 8.1+.
 
-## Features
+## 📋 Table of Contents
 
-- **Puzzle Generation**: Creates 14-letter puzzles guaranteed to allow at least one valid word
-- **Word Validation**: Validates submissions against a real English dictionary API
-- **Score Tracking**: Awards 1 point per letter used in valid words
-- **Session Management**: Tracks each student's puzzle state and progress
-- **Leaderboard**: Maintains top 10 highest-scoring submissions
-- **RESTful API**: Clean JSON API with proper error handling
-- **Unit Tests**: Comprehensive test coverage for all core business logic
-- **OpenAPI Documentation**: Auto-generated API documentation
+- [Features](#-features)
+- [Technology Stack](#-technology-stack)
+- [Project Structure](#-project-structure)
+- [Installation & Setup](#-installation--setup)
+- [API Documentation](#-api-documentation)
+- [Game Workflow](#-game-workflow)
+- [Testing](#-testing)
+- [Development](#-development)
+- [Deployment](#-deployment)
 
-## Requirements
+## ✨ Features
 
-- PHP 8.1+
-- Symfony 6.4+
-- SQLite (default) or MySQL/PostgreSQL
+### Core Game Features
+- **Random Puzzle Generation**: Creates 14-letter puzzles with guaranteed valid words
+- **Word Validation**: Validates submissions against English dictionary
+- **Letter Management**: Tracks remaining letters and prevents duplicate usage
+- **Scoring System**: 1 point per letter used
+- **Leaderboard**: Top 10 highest-scoring unique words
+- **Game State Management**: Tracks active games and submissions
+
+### Technical Features
+- **RESTful API**: Clean, documented endpoints
+- **Dependency Injection**: Proper service architecture
+- **Unit Testing**: Comprehensive test coverage
+- **Database Integration**: PostgreSQL for development, supports other databases
+- **Exception Handling**: Proper error responses
+- **Caching**: Dictionary word caching for performance
+
+## 🛠 Technology Stack
+
+- **Framework**: Symfony 6+
+- **PHP Version**: 8.1+
+- **Database**: PostgreSQL (development), MySQL/PostgreSQL (production)
+- **Testing**: PHPUnit
+- **API Documentation**: OpenAPI/Swagger annotations
+- **Frontend**: HTML, CSS, JavaScript (jQuery)
+
+## 📁 Project Structure
+
+```
+word_puzzle_symfony/
+├── src/
+│   ├── Controller/
+│   │   └── Api/
+│   │       └── GameController.php          # API endpoints
+│   ├── Entity/
+│   │   ├── Puzzle.php                     # Game puzzle entity
+│   │   ├── Student.php                    # Student/session entity
+│   │   ├── Submission.php                 # Word submission entity
+│   │   └── LeaderboardEntry.php          # Leaderboard entity
+│   ├── Repository/
+│   │   ├── PuzzleRepository.php
+│   │   ├── StudentRepository.php
+│   │   ├── SubmissionRepository.php
+│   │   └── LeaderboardEntryRepository.php
+│   └── Service/
+│       ├── GameService.php                # Core game logic
+│       └── DictionaryService.php          # Word validation
+├── tests/
+│   └── Service/
+│       └── GameServiceTest.php            # Unit tests
+├── templates/
+│   └── game/
+│       └── index.html.twig               # Game interface
+├── public/
+│   └── index.php                         # Entry point
+└── data/
+    └── words.txt                         # Dictionary file
+```
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- PHP 8.1 or higher
 - Composer
+- PostgreSQL (via Docker or local installation)
 
-## Installation
+### Step 1: Clone and Install Dependencies
+```bash
+# Clone the repository
+git clone <repository-url>
+cd word_puzzle_symfony
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd WordPuzzleGame
-   ```
+# Install dependencies
+composer install
+```
 
-2. **Install dependencies**:
-   ```bash
-   composer install
-   ```
+### Step 2: Environment Configuration
+```bash
+# Copy environment file for development
+cp .env .env.dev
 
-3. **Configure environment**:
-   ```bash
-   # Copy environment file
-   cp .env .env.local
-   
-   # Edit .env.local and set your database URL
-   # For SQLite (default):
-   DATABASE_URL="sqlite:///%kernel.project_dir%/var/app.db"
-   
-   # For MySQL:
-   DATABASE_URL="mysql://username:password@127.0.0.1:3306/wordpuzzlegame"
-   
-   # For PostgreSQL:
-   # DATABASE_URL="postgresql://username:password@localhost:5432/wordpuzzlegame"
-   ```
+# Edit .env.dev and configure:
+# - Database URL (PostgreSQL for development)
+# - App secret
+# - Other environment variables
+```
 
-4. **Create database and run migrations**:
-   ```bash
-   php bin/console doctrine:database:create
-   php bin/console doctrine:migrations:migrate
-   ```
+### Step 3: Database Setup
+```bash
+# Create database
+php bin/console doctrine:database:create
 
-5. **Generate sample data** (optional):
-   ```bash
-   php bin/console app:generate-puzzle-data --students=5 --submissions=3
-   ```
+# Run migrations
+php bin/console doctrine:migrations:migrate
 
-6. **Start the development server**:
-   ```bash
-   symfony server:start
-   ```
+### Step 4: Start Development Server
+```bash
+# Start Symfony development server
+php -S localhost:8000 -t public/
+
+# Or use Symfony CLI
+symfony server:start
+```
+
+### Step 5: Access the Application
+- **Web Interface**: http://localhost:8000
 
 ## API Endpoints
 
@@ -160,146 +217,351 @@ Get the top 10 highest-scoring submissions.
 ]
 ```
 
-## API Documentation
+### Base URL
+```
+http://localhost:8000/api/game
+```
 
-Interactive API documentation is available at:
+### Endpoints
+
+#### 1. Create Puzzle
+```http
+POST /api/game/puzzle
+Content-Type: application/json
+
+{
+    "sessionId": "student123"
+}
+```
+
+**Response:**
+```json
+{
+    "puzzleString": "ETAOINSHRDLUCM",
+    "remainingLetters": "ETAOINSHRDLUCM",
+    "totalScore": 0,
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00+00:00"
+}
+```
+
+#### 2. Submit Word
+```http
+POST /api/game/submit
+Content-Type: application/json
+
+{
+    "sessionId": "student123",
+    "word": "HEAT"
+}
+```
+
+**Response:**
+```json
+{
+    "word": "HEAT",
+    "score": 4,
+    "totalScore": 4,
+    "remainingLetters": "STARMINDFIRE",
+    "isComplete": false,
+    "submissionId": 1
+}
+```
+
+#### 3. Get Game State
+```http
+GET /api/game/state/{sessionId}
+```
+
+**Response:**
+```json
+{
+    "puzzleString": "ETAOINSHRDLUCM",
+    "remainingLetters": "STARMINDFIRE",
+    "totalScore": 4,
+    "isActive": true,
+    "submissions": [
+        {
+            "word": "HEAT",
+            "score": 4,
+            "submittedAt": "2024-01-15T10:30:00+00:00"
+        }
+    ],
+    "createdAt": "2024-01-15T10:30:00+00:00"
+}
+```
+
+#### 4. Get Leaderboard
+```http
+GET /api/game/leaderboard
+```
+
+**Response:**
+```json
+[
+    {
+        "word": "HEAT",
+        "score": 4,
+        "createdAt": "2024-01-15T10:30:00+00:00"
+    },
+    {
+        "word": "STAR",
+        "score": 4,
+        "createdAt": "2024-01-15T10:31:00+00:00"
+    }
+]
+```
+
+#### 5. End Game
+```http
+POST /api/game/end
+Content-Type: application/json
+
+{
+    "sessionId": "student123"
+}
+```
+
+**Response:**
+```json
+{
+    "remainingWords": ["STAR", "MIND", "FIRE"],
+    "totalScore": 8
+}
+```
+
+### Interactive Documentation
 - **Swagger UI**: `http://localhost:8000/api/doc`
 - **JSON Schema**: `http://localhost:8000/api/doc.json`
 
-## Architecture
+## 🎮 Game Workflow
 
-### Domain Entities
+### 1. **Game Initialization**
+- Student enters session ID
+- System creates new puzzle with 14 random letters
+- Puzzle guaranteed to have at least one valid English word
 
-1. **Puzzle**: Represents a 14-letter puzzle with remaining letters and submissions
-2. **Student**: Represents a student session with puzzle relationship
-3. **Submission**: Represents a word submission with score and timestamp
-4. **LeaderboardEntry**: Represents top-scoring words for the leaderboard
+### 2. **Word Submission Process**
+- Student submits a word
+- System validates:
+  - Word is not empty
+  - Word contains only letters
+  - Word is not too long (max 14 characters)
+  - Word is a valid English word
+  - Word can be formed from remaining letters
+  - Word hasn't been submitted before
 
-### Service Layer
+### 3. **Scoring & Letter Management**
+- Score = 1 point per letter used
+- Used letters are removed from remaining pool
+- Total score accumulates across submissions
 
-1. **GameService**: Core business logic for puzzle creation, word submission, and score calculation
-2. **DictionaryService**: Handles English word validation using external API with caching
+### 4. **Game Completion**
+- Game ends when:
+  - No more valid words can be formed
+  - Student manually ends the game
+- System shows final score and remaining valid words
 
-### Key Design Principles
+### 5. **Leaderboard Management**
+- Top 10 highest-scoring unique words
+- No duplicate words allowed
+- Automatic cleanup of lower-scoring entries
 
-- **Clean Architecture**: Separation of concerns with clear boundaries
-- **Domain-Driven Design**: Rich domain models with business logic
-- **Repository Pattern**: Data access abstraction
-- **Service Layer**: Business logic encapsulation
-- **Exception Handling**: Proper HTTP status codes and error messages
-- **Caching**: Dictionary API responses to improve performance
-- **Validation**: Input validation at multiple layers
+## 🧪 Testing
 
-### Database Schema
-
-```sql
--- Puzzles table
-CREATE TABLE puzzle (
-    id INTEGER PRIMARY KEY,
-    puzzle_string VARCHAR(14) NOT NULL,
-    remaining_letters VARCHAR(14) NOT NULL,
-    created_at DATETIME NOT NULL,
-    is_active BOOLEAN NOT NULL DEFAULT 1
-);
-
--- Students table
-CREATE TABLE student (
-    id INTEGER PRIMARY KEY,
-    session_id VARCHAR(255) UNIQUE NOT NULL,
-    created_at DATETIME NOT NULL,
-    last_activity DATETIME NOT NULL,
-    puzzle_id INTEGER NOT NULL,
-    FOREIGN KEY (puzzle_id) REFERENCES puzzle (id)
-);
-
--- Submissions table
-CREATE TABLE submission (
-    id INTEGER PRIMARY KEY,
-    word VARCHAR(255) NOT NULL,
-    score INTEGER NOT NULL,
-    submitted_at DATETIME NOT NULL,
-    puzzle_id INTEGER NOT NULL,
-    FOREIGN KEY (puzzle_id) REFERENCES puzzle (id)
-);
-
--- Leaderboard entries table
-CREATE TABLE leaderboard_entry (
-    id INTEGER PRIMARY KEY,
-    word VARCHAR(255) UNIQUE NOT NULL,
-    score INTEGER NOT NULL,
-    created_at DATETIME NOT NULL
-);
-```
-
-## Testing
-
-### Run Tests
+### Running Tests
 ```bash
 # Run all tests
 php bin/phpunit
 
-# Run specific test suite
+# Run specific test file
 php bin/phpunit tests/Service/GameServiceTest.php
 
-# Run with coverage report
-php bin/phpunit --coverage-html var/coverage
+# Run specific test method
+php bin/phpunit --filter testSubmitWordSuccess
+
+# Run with coverage
+php bin/phpunit --coverage-html coverage/
 ```
 
 ### Test Coverage
-- **GameService**: Core business logic, puzzle creation, word submission
-- **DictionaryService**: Word validation and caching
-- **Entities**: Domain model behavior and relationships
-- **API Controllers**: Endpoint functionality and error handling
+The project includes comprehensive unit tests covering:
 
-## Development
+- **Game Creation**: New student, existing student scenarios
+- **Word Submission**: Success cases, validation errors
+- **Game State**: State retrieval, error handling
+- **Leaderboard**: Score management, cleanup
+- **Puzzle Logic**: Letter usage, scoring calculation
+- **Game End**: Completion logic, remaining words
 
-### Code Standards
-- Follows PSR-12 coding standards
-- Uses PHP 8.1+ features (typed properties, constructor promotion)
-- Comprehensive PHPDoc annotations
-- OpenAPI/Swagger documentation
+### Test Structure
+```php
+class GameServiceTest extends TestCase
+{
+    // Setup with mocked dependencies
+    protected function setUp(): void
+    {
+        // Create mocks for all dependencies
+        // Inject mocks into service
+    }
 
-### Commands
-
-```bash
-# Generate puzzle data for testing
-php bin/console app:generate-puzzle-data [--students=5] [--submissions=3] [--clear]
-
-# Clear cache
-php bin/console cache:clear
-
-# Update database schema
-php bin/console doctrine:schema:update --force
-
-# Create new migration
-php bin/console make:migration
+    // Test methods follow AAA pattern:
+    // Arrange - Set up test data and mocks
+    // Act - Execute the method being tested
+    // Assert - Verify expected outcomes
+}
 ```
 
-## Deployment
+## 🔧 Development
+
+### Key Services
+
+#### GameService
+- **Purpose**: Core game logic and business rules
+- **Responsibilities**:
+  - Puzzle creation and management
+  - Word submission validation
+  - Score calculation
+  - Game state management
+  - Leaderboard updates
+
+#### DictionaryService
+- **Purpose**: Word validation and dictionary operations
+- **Responsibilities**:
+  - English word validation
+  - Remaining word calculation
+  - Dictionary caching
+  - Word frequency analysis
+
+### Database Schema
+
+#### Puzzle Entity
+- `id`: Primary key
+- `puzzleString`: 14-letter puzzle string
+- `remainingLetters`: Available letters for word formation
+- `isActive`: Game status
+- `createdAt`: Creation timestamp
+
+#### Student Entity
+- `id`: Primary key
+- `sessionId`: Unique session identifier
+- `puzzle`: Associated puzzle
+- `lastActivity`: Last activity timestamp
+
+#### Submission Entity
+- `id`: Primary key
+- `word`: Submitted word
+- `score`: Word score
+- `puzzle`: Associated puzzle
+- `submittedAt`: Submission timestamp
+
+#### LeaderboardEntry Entity
+- `id`: Primary key
+- `word`: Word entry
+- `score`: Word score
+- `createdAt`: Entry timestamp
+
+### Error Handling
+The application uses proper exception handling:
+
+```php
+// Custom exceptions for different scenarios
+throw new BadRequestHttpException('Word cannot be empty');
+throw new NotFoundHttpException('No active puzzle found');
+```
+
+## 🚀 Deployment
 
 ### Production Setup
-1. Set `APP_ENV=prod` in `.env.local`
-2. Clear cache: `php bin/console cache:clear --env=prod`
-3. Run migrations: `php bin/console doctrine:migrations:migrate --env=prod`
-4. Configure web server (Apache/Nginx) to serve `public/` directory
 
-### Environment Variables
-- `DATABASE_URL`: Database connection string
-- `APP_ENV`: Environment (dev/prod)
-- `APP_SECRET`: Application secret for security
+#### 1. Environment Configuration
+```bash
+# Set production environment
+APP_ENV=prod
+APP_DEBUG=0
 
-## Contributing
+# Configure database
+DATABASE_URL="mysql://user:pass@host:port/database"
 
-1. Fork the repository
-2. Create a feature branch
-3. Make changes following PSR-12 standards
-4. Add tests for new functionality
-5. Submit a pull request
+# Set secret
+APP_SECRET=your-secret-key
+```
 
-## License
+#### 2. Install Dependencies
+```bash
+composer install --no-dev --optimize-autoloader
+```
 
-This project is licensed under the MIT License.
+#### 3. Database Setup
+```bash
+php bin/console doctrine:migrations:migrate --env=prod
+```
 
-## Support
+#### 4. Clear Cache
+```bash
+php bin/console cache:clear --env=prod
+```
 
-For support and questions, please contact the development team or create an issue in the repository. 
+#### 5. Web Server Configuration
+Configure your web server (Apache/Nginx) to point to the `public/` directory.
+
+### Docker Deployment
+```dockerfile
+FROM php:8.1-fpm
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev
+
+# Install PHP extensions
+RUN docker-php-ext-install zip pdo pdo_mysql
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application
+COPY . .
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Set permissions
+RUN chown -R www-data:www-data var/
+
+EXPOSE 80
+
+CMD ["php", "-S", "0.0.0.0:80", "-t", "public/"]
+```
+
+## 📝 Contributing
+
+### Development Workflow
+1. **Fork** the repository
+2. **Create** a feature branch
+3. **Write** tests for new functionality
+4. **Implement** the feature
+5. **Run** tests to ensure everything works
+6. **Submit** a pull request
+
+### Code Standards
+- Follow PSR-12 coding standards
+- Write comprehensive unit tests
+- Document all public methods
+- Use dependency injection
+- Handle exceptions properly
+
+## 🤝 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the API
+- Review the test cases for usage examples
+
+---
+
+**Happy Word Puzzling! 🎯** 
