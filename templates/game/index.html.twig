@@ -437,6 +437,12 @@
                         word: word 
                     }),
                     success: function(data) {
+                        if(data.isComplete){
+                            const message = getMessageToEndGame(data.totalScore, null);
+                            $('#gameEndMessage').html(message);
+                            $('#gameEndModal').show();
+                            return;
+                        }
                         gameState = data;
                         updateGameDisplay();
                         $('#wordInput').val('');
@@ -468,13 +474,18 @@
             }
 
             function showGameEndModal(data) {
-                const message = `🎉 Congratulations!<br><br>
-                               <strong>Your Final Score:</strong> ${data.totalScore}<br>
-                               <strong>Remaining Words:</strong> ${data.remainingWords}<br><br>
-                               <em>Click close to return to the main menu.</em>`;
+                const message = getMessageToEndGame(data.totalScore, data.remainingWords);
                 
                 $('#gameEndMessage').html(message);
                 $('#gameEndModal').show();
+            }
+
+            function getMessageToEndGame(totalScore, remainingWords){
+                const message = `🎉 Congratulations!<br><br>
+                    <strong>Your Final Score:</strong> ${totalScore}<br>
+                    ${remainingWords ? `<strong>Remaining Words:</strong> ${remainingWords}<br><br>` : ''}
+                    <em>Click close to return to the main menu.</em>`;
+                return message;
             }
 
             function closeGameEndModal() {
