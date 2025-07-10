@@ -10,7 +10,6 @@ class DictionaryService
     private const DICTIONARY_FILE = __DIR__ . '/../../data/words.txt';
     private const CACHE_TTL = 86400; // 24 hours
     private const CACHE_KEY = 'dictionary_words';
-    private const LETTER_FREQUENCY_CACHE_KEY = 'letter_frequency_index';
 
     public function __construct(
         private CacheInterface $cache
@@ -75,6 +74,34 @@ class DictionaryService
     }
 
     /**
+     * Get dictionary words indexed by length for faster filtering
+     * 
+     * @return array
+     */
+    private function getDictionaryWordsIndexed(): array
+    {
+        return $this->cache->get(self::CACHE_KEY . '_indexed', function (CacheItem $item) {
+            $item->expiresAfter(self::CACHE_TTL);
+            
+            $dictionary = $this->getDictionaryWords();
+            $wordsByLength = [];
+            
+            foreach ($dictionary as $word) {
+                $length = strlen($word);
+                if (!isset($wordsByLength[$length])) {
+                    $wordsByLength[$length] = [];
+                }
+                $wordsByLength[$length][] = $word;
+            }
+            
+            // Sort lengths in descending order
+            krsort($wordsByLength);
+            
+            return $wordsByLength;
+        });
+    }
+
+    /**
      * Get word candidates based on letter frequency
      * 
      * @param array $letterFrequency
@@ -83,27 +110,29 @@ class DictionaryService
      */
     private function getWordCandidates(array $letterFrequency, int $limit): array
     {
-        $dictionary = $this->getDictionaryWords();
-        // Sort by word length (highest to lowest)
-        uasort($dictionary, function($a, $b) {
-            return strlen($b) - strlen($a);
-        });
+        $wordsByLength = $this->getDictionaryWordsIndexed();
         
         $candidates = [];
         $letterKeys = array_keys($letterFrequency);
         
-        foreach ($dictionary as $word) {
-            // Quick pre-filter: word must contain at least one of our letters
-            if (!$this->hasCommonLetters($word, $letterKeys)) {
-                continue;
-            }
-            
-            // Check if word can be formed from available letters
-            if ($this->canFormWord($word, $letterFrequency)) {
-                $candidates[] = $word;
+        // Create a set of available letters for faster lookup
+        $availableLettersSet = array_flip($letterKeys);
+        
+        // Iterate through words by length (longest first)
+        foreach ($wordsByLength as $length => $words) {
+            foreach ($words as $word) {
+                // Quick pre-filter: word must contain at least one of our letters
+                if (!$this->hasCommonLettersFast($word, $availableLettersSet)) {
+                    continue;
+                }
                 
-                if (count($candidates) >= $limit) {
-                    break;
+                // Check if word can be formed from available letters
+                if ($this->canFormWord($word, $letterFrequency)) {
+                    $candidates[] = $word;
+                    
+                    if (count($candidates) >= $limit) {
+                        break 2; // Break out of both loops
+                    }
                 }
             }
         }
@@ -112,16 +141,21 @@ class DictionaryService
     }
 
     /**
-     * Check if a word has any common letters with available letters
+     * Fast check if a word has any common letters with available letters
      * 
      * @param string $word
-     * @param array $availableLetters
+     * @param array $availableLettersSet
      * @return bool
      */
-    private function hasCommonLetters(string $word, array $availableLetters): bool
+    private function hasCommonLettersFast(string $word, array $availableLettersSet): bool
     {
-        $wordLetters = str_split($word);
-        return !empty(array_intersect($wordLetters, $availableLetters));
+        $wordLength = strlen($word);
+        for ($i = 0; $i < $wordLength; $i++) {
+            if (isset($availableLettersSet[$word[$i]])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -219,7 +253,14 @@ class DictionaryService
             });
 
             // Convert to lowercase for case-insensitive comparison
-            return array_map('strtolower', $filteredWords);
+            $lowercaseWords = array_map('strtolower', $filteredWords);
+            
+            // Sort by word length (highest to lowest) once and cache it
+            uasort($lowercaseWords, function($a, $b) {
+                return strlen($b) - strlen($a);
+            });
+            
+            return $lowercaseWords;
         });
     }
 
